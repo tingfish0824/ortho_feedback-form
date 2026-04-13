@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>矯正諮詢模擬演練 · 回饋單</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2C2C2A;
+    background: #F9F8F5;
+    padding: 24px 16px 48px;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    border: 0.5px solid #D3D1C7;
+    padding: 32px 36px;
+  }
+
+  .page-title { font-size: 22px; font-weight: 500; color: #2C2C2A; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #888780; margin-bottom: 28px; }
+
+  .section { margin-bottom: 24px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #EEEDFE;
+    border: 0.5px solid #AFA9EC;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+  }
+  .section-letter {
+    font-size: 11px;
+    font-weight: 500;
+    color: #534AB7;
+    background: #fff;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border: 0.5px solid #AFA9EC;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 12px; font-weight: 500; color: #3C3489; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .card {
+    background: #fff;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .field-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .field { flex: 1; min-width: 100px; }
+  .field label { display: block; font-size: 11px; color: #888780; margin-bottom: 3px; }
+
+  input[type="text"], input[type="date"], select, textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13px;
+    color: #2C2C2A;
+    background: #F9F8F5;
+    border: 0.5px solid #D3D1C7;
+    border-radius: 6px;
+    padding: 6px 8px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+    border-color: #7F77DD;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 56px; }
+
+  .divider { border: none; border-top: 0.5px solid #E8E6DF; margin: 12px 0; }
+
+  .result-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .result-col { flex: 1; min-width: 120px; }
+  .result-col label { font-size: 11px; color: #888780; display: block; margin-bottom: 4px; }
+
+  .score-input {
+    font-size: 26px !important;
+    font-weight: 500;
+    text-align: center;
+    width: 80px !important;
+    padding: 4px 8px !important;
+  }
+
+  .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .toggle-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid #D3D1C7;
+    background: #F9F8F5;
+    color: #888780;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .toggle-btn.active-low  { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+  .toggle-btn.active-mid  { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+  .toggle-btn.active-high { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+  .toggle-btn.active-blue { background: #E6F1FB; color: #185FA5; border-color: #85B7EB; }
+  .toggle-btn.active-on   { background: #E6F1FB; color: #185FA5; border-color: #85B7EB; }
+
+  .cap-table { width: 100%; border-collapse: collapse; }
+  .cap-table td { padding: 7px 8px; vertical-align: middle; border-bottom: 0.5px solid #E8E6DF; font-size: 13px; }
+  .cap-table tr:last-child td { border-bottom: none; }
+  .cap-table tr:nth-child(even) td { background: #F9F8F5; }
+  .cap-name { font-weight: 500; width: 80px; }
+  .cap-desc { color: #888780; font-size: 12px; }
+  .cap-btns { display: flex; gap: 4px; justify-content: flex-end; white-space: nowrap; }
+  .cap-btn {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 0.5px solid #D3D1C7;
+    background: #F9F8F5;
+    color: #888780;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cap-btn.good  { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+  .cap-btn.ok    { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+  .cap-btn.weak  { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+
+  .trust-table { width: 100%; border-collapse: collapse; }
+  .trust-table th { font-size: 11px; color: #888780; font-weight: 500; text-align: center; padding: 6px 8px; background: #F1EFE8; border-bottom: 0.5px solid #D3D1C7; }
+  .trust-table th:first-child { text-align: left; }
+  .trust-table td { font-size: 13px; padding: 7px 8px; border-bottom: 0.5px solid #E8E6DF; text-align: center; }
+  .trust-table td:first-child { text-align: left; }
+  .trust-table tr:last-child td { border-bottom: none; }
+  .trust-table tr:nth-child(even) td { background: #F9F8F5; }
+  .radio-circle {
+    width: 16px; height: 16px;
+    border: 1.5px solid #B4B2A9;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.15s;
+    vertical-align: middle;
+  }
+  .radio-circle.checked { border-color: #534AB7; background: #534AB7; box-shadow: inset 0 0 0 3px #fff; }
+
+  .risk-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+
+  .dialog-block { padding-bottom: 12px; }
+  .dialog-block + .dialog-block { border-top: 0.5px solid #E8E6DF; padding-top: 12px; }
+  .dialog-round-label { font-size: 12px; font-weight: 500; color: #888780; margin-bottom: 8px; }
+  .two-col { display: flex; gap: 10px; }
+  .two-col > div { flex: 1; }
+
+  .prog-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .prog-btn {
+    flex: 1; min-width: 140px;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 0.5px solid #D3D1C7;
+    background: #F9F8F5;
+    color: #888780;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .action-block { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .action-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .action-icon.keep     { background: #EAF3DE; color: #3B6D11; }
+  .action-icon.stop     { background: #FCEBEB; color: #A32D2D; }
+  .action-icon.practice { background: #E6F1FB; color: #185FA5; }
+  .action-block > div { flex: 1; }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 20px;
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .btn-export {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 0.5px solid #D3D1C7;
+    background: #fff;
+    color: #2C2C2A;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-export:hover { background: #F1EFE8; }
+  .btn-export svg { width: 15px; height: 15px; }
+
+  .status-bar {
+    font-size: 12px;
+    color: #888780;
+    text-align: right;
+    max-width: 780px;
+    margin: 8px auto 0;
+    min-height: 18px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { border: none; border-radius: 0; box-shadow: none; padding: 20px 24px; }
+    .toolbar, .status-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn-export" onclick="exportPDF()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v13m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+    </svg>
+    匯出 PDF
+  </button>
+</div>
+<div class="status-bar" id="status-bar"></div>
+
+<div class="page" id="form-page">
+
+  <div class="page-title">矯正諮詢模擬演練 · 回饋單</div>
+  <div class="page-sub">Orthodontic Consultation Simulator — Feedback Form</div>
+
+  <!-- A -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">A</div>
+      <div class="section-title">結果摘要</div>
+    </div>
+    <div class="card">
+      <div class="field-row">
+        <div class="field" style="max-width:140px">
+          <label>日期</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>組別</label>
+          <input type="text" placeholder="例：第二組">
+        </div>
+        <div class="field" style="max-width:100px">
+          <label>模擬輪次</label>
+          <input type="text" placeholder="第 1 輪">
+        </div>
+        <div class="field" style="max-width:110px">
+          <label>難度</label>
+          <select>
+            <option>一般</option>
+            <option>提高難度</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:120px">
+          <label>患者情境（字母）</label>
+          <input type="text" placeholder="例：C">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-row">
+        <div class="result-col" style="max-width:100px">
+          <label>最終信任分數</label>
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <input type="text" class="score-input" placeholder="0" id="score-val" oninput="autoTrust(this.value)">
+            <span style="font-size:13px;color:#888780">分</span>
+          </div>
+        </div>
+        <div class="result-col">
+          <label>信任狀態</label>
+          <div class="toggle-group" id="trust-state">
+            <div class="toggle-btn" data-cls="active-low"  onclick="selectToggle('trust-state',this)">低信任</div>
+            <div class="toggle-btn" data-cls="active-mid"  onclick="selectToggle('trust-state',this)">建立中</div>
+            <div class="toggle-btn" data-cls="active-high" onclick="selectToggle('trust-state',this)">高度信任</div>
+          </div>
+        </div>
+        <div class="result-col" style="max-width:150px">
+          <label>成功推進下一步</label>
+          <div class="toggle-group" id="next-step">
+            <div class="toggle-btn" data-cls="active-high" onclick="selectToggle('next-step',this)">是</div>
+            <div class="toggle-btn" data-cls="active-low"  onclick="selectToggle('next-step',this)">否</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">B</div>
+      <div class="section-title">本次總評</div>
+    </div>
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label>一句話總評</label>
+        <textarea placeholder="整體表現用一句話說完，例：能先接住患者情緒，但說明方案時仍太抽象。"></textarea>
+      </div>
+      <div class="divider"></div>
+      <div class="two-col" style="margin-bottom:10px">
+        <div class="field">
+          <label>做得好的地方</label>
+          <textarea placeholder="列出 1–2 點，具體說明哪裡做對了。"></textarea>
+        </div>
+        <div class="field">
+          <label>最需要修正的地方</label>
+          <textarea placeholder="列出 1–2 點，說明哪裡讓患者退縮或失去信任。"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label>卡住的核心原因</label>
+        <textarea placeholder="這次對話卡住，最根本是什麼原因？例：有回答問題，但沒讓患者感覺「你懂我在猶豫什麼」"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">C</div>
+      <div class="section-title">核心能力評估</div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="cap-table" id="cap-table"></table>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">D</div>
+      <div class="section-title">信任建立指標</div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="trust-table">
+        <thead>
+          <tr>
+            <th>行為指標</th>
+            <th>有做到</th>
+            <th>部分做到</th>
+            <th>未做到</th>
+          </tr>
+        </thead>
+        <tbody id="trust-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">E</div>
+      <div class="section-title">失分風險檢核</div>
+    </div>
+    <div class="card">
+      <div class="risk-wrap" id="risk-wrap"></div>
+      <div class="divider"></div>
+      <div class="field">
+        <label>本次最明顯的失分行為</label>
+        <input type="text" placeholder="寫出一個最具代表性的失分習慣">
+      </div>
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">F</div>
+      <div class="section-title">關鍵對話截點回顧（挑 2–3 個關鍵回合）</div>
+    </div>
+    <div class="card" id="dialog-card">
+      <div id="dialog-blocks"></div>
+      <button class="toggle-btn" id="add-dialog-btn" onclick="addDialog()" style="margin-top:8px;font-size:12px">＋ 新增回合</button>
+    </div>
+  </div>
+
+  <!-- G -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">G</div>
+      <div class="section-title">患者推進判讀</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:#888780;margin-bottom:8px">勾選最符合這次患者最終狀態的描述</div>
+      <div class="prog-row" id="prog-row"></div>
+    </div>
+  </div>
+
+  <!-- H -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-letter">H</div>
+      <div class="section-title">下次行動</div>
+    </div>
+    <div class="card">
+      <div class="action-block">
+        <div class="action-icon keep">✓</div>
+        <div class="field">
+          <label>我要保留的做法</label>
+          <textarea placeholder="這次有效的做法，下次繼續保留。"></textarea>
+        </div>
+      </div>
+      <div class="action-block">
+        <div class="action-icon stop">✕</div>
+        <div class="field">
+          <label>我要停止的做法</label>
+          <textarea placeholder="這次造成扣分的行為，下次要刻意停止。"></textarea>
+        </div>
+      </div>
+      <div class="action-block">
+        <div class="action-icon practice">→</div>
+        <div class="field">
+          <label>我要刻意練習的一句話或技巧</label>
+          <textarea placeholder="寫出下次要練習的具體說法或方法。"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const caps = [
+  { name: "關係建立", desc: "能讓患者放下防備、感受到被理解" },
+  { name: "需求挖掘", desc: "找到真正卡住患者的點" },
+  { name: "說明能力", desc: "把專業講成一般人聽得懂的話" },
+  { name: "推進能力", desc: "自然引導到下一步，不讓人有壓力" },
+];
+const trustItems = [
+  "有先理解患者／家長真正的顧慮",
+  "有回應對方當下問題，而不只講自己想說的",
+  "有用生活語言說明矯正價值",
+  "有清楚解釋不同方案或價格差異",
+  "有降低焦慮、壓力或防衛感",
+  "有讓患者感受到被理解",
+  "有自然引導到下一步，而非硬推進",
+];
+const riskItems = [
+  "一開始太快談價格","語氣有推銷感","忽略患者情緒",
+  "使用太多專業術語","有回答但沒回到患者問題",
+  "連續幾輪說得太空泛","太急著推進預約或成交",
+];
+const progItems = [
+  { label:"患者只是禮貌回應", cls:"active-low" },
+  { label:"患者開始願意多說",  cls:"active-mid" },
+  { label:"患者降低防備",      cls:"active-blue" },
+  { label:"患者願意接受下一步",cls:"active-high" },
+];
+
+function buildCaps() {
+  const tb = document.getElementById('cap-table');
+  tb.innerHTML = caps.map((c,i) => `
+    <tr>
+      <td class="cap-name">${c.name}</td>
+      <td class="cap-desc">${c.desc}</td>
+      <td>
+        <div class="cap-btns">
+          <div class="cap-btn" onclick="selCap(this,'good')">佳</div>
+          <div class="cap-btn" onclick="selCap(this,'ok')">可加強</div>
+          <div class="cap-btn" onclick="selCap(this,'weak')">不足</div>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+function selCap(btn, level) {
+  btn.parentElement.querySelectorAll('.cap-btn').forEach(b => b.className='cap-btn');
+  btn.classList.add(level);
+}
+
+function buildTrust() {
+  const tb = document.getElementById('trust-tbody');
+  tb.innerHTML = trustItems.map((t,i) => `
+    <tr>
+      <td>${t}</td>
+      <td><span class="radio-circle" onclick="selRadio(this,${i})"></span></td>
+      <td><span class="radio-circle" onclick="selRadio(this,${i})"></span></td>
+      <td><span class="radio-circle" onclick="selRadio(this,${i})"></span></td>
+    </tr>`).join('');
+}
+function selRadio(el, row) {
+  el.closest('tr').querySelectorAll('.radio-circle').forEach(r => r.classList.remove('checked'));
+  el.classList.add('checked');
+}
+
+function buildRisk() {
+  const w = document.getElementById('risk-wrap');
+  w.innerHTML = riskItems.map(r => `<div class="toggle-btn" onclick="this.classList.toggle('active-on')">${r}</div>`).join('');
+}
+
+function buildProg() {
+  const r = document.getElementById('prog-row');
+  r.innerHTML = progItems.map((p,i) => `
+    <div class="prog-btn" id="prog-${i}" onclick="selProg(${i})">${p.label}</div>`).join('');
+}
+function selProg(idx) {
+  progItems.forEach((_,i) => {
+    const el = document.getElementById(`prog-${i}`);
+    el.className = 'prog-btn';
+  });
+  const el = document.getElementById(`prog-${idx}`);
+  el.classList.add(progItems[idx].cls);
+}
+
+function selectToggle(groupId, btn) {
+  document.getElementById(groupId).querySelectorAll('.toggle-btn').forEach(b => {
+    b.classList.remove('active-low','active-mid','active-high','active-blue','active-on');
+  });
+  btn.classList.add(btn.dataset.cls);
+}
+
+function autoTrust(val) {
+  const n = parseInt(val);
+  if (isNaN(n)) return;
+  const group = document.getElementById('trust-state');
+  group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-low','active-mid','active-high'));
+  if (n < 30) group.children[0].classList.add('active-low');
+  else if (n < 70) group.children[1].classList.add('active-mid');
+  else group.children[2].classList.add('active-high');
+}
+
+let dialogCount = 0;
+function addDialog() {
+  if (dialogCount >= 3) return;
+  dialogCount++;
+  const container = document.getElementById('dialog-blocks');
+  const div = document.createElement('div');
+  div.className = 'dialog-block';
+  div.innerHTML = `
+    <div class="dialog-round-label">關鍵回合 ${dialogCount}</div>
+    <div class="field" style="margin-bottom:8px">
+      <label>患者說了什麼</label>
+      <textarea placeholder="患者的原話或大意"></textarea>
+    </div>
+    <div class="field" style="margin-bottom:8px">
+      <label>學員怎麼回</label>
+      <textarea placeholder="學員當下的回應"></textarea>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>這樣回的效果</label>
+        <textarea placeholder="對信任分數的影響？患者反應如何？"></textarea>
+      </div>
+      <div class="field">
+        <label>更好的回法可以是</label>
+        <textarea placeholder="示範一個更有效的回應方式"></textarea>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  if (dialogCount >= 3) document.getElementById('add-dialog-btn').style.display = 'none';
+}
+
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+buildCaps(); buildTrust(); buildRisk(); buildProg();
+addDialog();
+
+async function exportPDF() {
+  const status = document.getElementById('status-bar');
+  status.textContent = '正在產生 PDF，請稍候…';
+  const toolbar = document.querySelector('.toolbar');
+  const addBtn = document.getElementById('add-dialog-btn');
+  toolbar.style.display = 'none';
+  status.style.display = 'none';
+  addBtn.style.display = 'none';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const page = document.getElementById('form-page');
+    const canvas = await html2canvas(page, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    const imgW = 210;
+    const imgH = canvas.height * imgW / canvas.width;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const pageH = 297;
+    let yOffset = 0;
+
+    while (yOffset < imgH) {
+      if (yOffset > 0) pdf.addPage();
+      const sliceH = Math.min(pageH, imgH - yOffset);
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = (sliceH / imgH) * canvas.height;
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, -(yOffset / imgH) * canvas.height);
+      pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, sliceH);
+      yOffset += pageH;
+    }
+
+    const dateStr = new Date().toISOString().slice(0,10);
+    pdf.save(`矯正諮詢回饋單_${dateStr}.pdf`);
+    status.textContent = 'PDF 已匯出完成。';
+  } catch (e) {
+    status.textContent = '匯出失敗，請重試。';
+    console.error(e);
+  }
+
+  toolbar.style.display = '';
+  status.style.display = '';
+  if (dialogCount < 3) addBtn.style.display = '';
+}
+</script>
+</body>
+</html>
